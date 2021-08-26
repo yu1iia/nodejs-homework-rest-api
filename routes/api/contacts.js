@@ -1,12 +1,15 @@
 const express = require('express')
 const router = express.Router()
-const contacts = require('../../model')
+
 const { contactSchema } = require('../../validation')
+const contactsOperations = require('../../model/contacts')
 
 router.get('/', async (req, res, next) => {
   try {
-    const listContacts = await contacts.listContacts()
-    res.json(listContacts)
+    const contacts = await contactsOperations.listContacts()
+    res.json({
+      contacts,
+    })
   } catch (error) {
     next(error)
   }
@@ -15,13 +18,15 @@ router.get('/', async (req, res, next) => {
 router.get('/:contactId', async (req, res, next) => {
   try {
     const { contactId } = req.params
-    const contact = await contacts.getContactById(parseInt(contactId))
+    const contact = await contactsOperations.getContactById(contactId)
     if (!contact) {
       return res.status(404).json({
-        message: 'Not Found'
+        message: 'Contact not found',
       })
     }
-    res.json(contact)
+    res.json({
+      contact,
+    })
   } catch (error) {
     next(error)
   }
@@ -32,11 +37,32 @@ router.post('/', async (req, res, next) => {
     const { error } = contactSchema.validate(req.body)
     if (error) {
       return res.status(400).json({
-        message: 'missing required name field'
+        message: error.message,
       })
     }
-    const newContact = await contacts.addContact(req.body)
-    return res.status(201).json(newContact)
+    const newContact = await contactsOperations.addContact(req.body)
+    res.status(201).json({
+      newContact,
+    })
+  } catch (error) {
+    next(error)
+  }
+})
+
+router.delete('/:contactId', async (req, res, next) => {
+  try {
+    const { contactId } = req.params
+    const deleteContact = await contactsOperations.removeContact(contactId)
+    if (!deleteContact) {
+      return res.status(404).json({
+        message: 'Not found',
+      })
+    }
+    res.json({
+      status: 'success',
+      code: 200,
+      message: 'Contact deleted',
+    })
   } catch (error) {
     next(error)
   }
@@ -47,32 +73,22 @@ router.put('/:contactId', async (req, res, next) => {
     const { error } = contactSchema.validate(req.body)
     if (error) {
       return res.status(400).json({
-        message: 'missing fields'
+        message: error.message,
       })
     }
     const { contactId } = req.params
-    const updatedContact = await contacts.updateContact(parseInt(contactId), req.body)
-    if (!updatedContact) {
+    const updateContact = await contactsOperations.updateContact(
+      contactId,
+      req.body,
+    )
+    if (!updateContact) {
       return res.status(404).json({
-        message: 'Not Found'
+        message: 'Not found',
       })
     }
-    return res.json(updatedContact)
-  } catch (error) {
-    next(error)
-  }
-})
-
-router.delete('/:contactId', async (req, res, next) => {
-  try {
-    const { contactId } = req.params
-    const deletedContact = await contacts.removeContact(parseInt(contactId))
-    if (!deletedContact) {
-      return res.status(404).json({
-        message: 'Not Found'
-      })
-    }
-    res.json(deletedContact)
+    res.json({
+      updateContact,
+    })
   } catch (error) {
     next(error)
   }
