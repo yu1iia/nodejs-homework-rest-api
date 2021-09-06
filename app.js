@@ -2,6 +2,10 @@ const express = require('express')
 const logger = require('morgan')
 const cors = require('cors')
 
+// const mongoose = require('mongoose')
+require('dotenv').config()
+
+const { authRouter } = require('./routes/api')
 const contactsRouter = require('./routes/api/contacts')
 
 const app = express()
@@ -13,6 +17,12 @@ app.use(cors())
 app.use(express.json())
 
 app.use('/api/contacts', contactsRouter)
+
+app.use('/api/users', authRouter)
+// POST - api/users/signup
+// POST - api/users/login
+// GET - api/users/logout
+// GET - api/users/current
 
 app.use((_, res) => {
   res.status(404).json({ message: 'Not found' })
