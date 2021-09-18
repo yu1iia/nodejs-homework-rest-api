@@ -18,7 +18,7 @@ const resendVerifyEmail = async (req, res, next) => {
     const data = {
       to: email,
       subject: 'Registration confirmation',
-      html: `<a href="http://localhost:3000/api/users/verify/${verificationToken}">Let's verify your email so you can start to use your phonebook</a>`,
+      html: `<a href="http://localhost:3000/api/users/verify/${verificationToken}">Please confirm your registration</a>`,
     }
 
     sendMail(data)
